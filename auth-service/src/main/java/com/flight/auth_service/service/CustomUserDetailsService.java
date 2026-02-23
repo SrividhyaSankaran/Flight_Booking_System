@@ -36,33 +36,30 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found"));
 
-        List<UserRole> userRoles =
-                userRoleRepository.findByUserId(user.getId());
-
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        for (UserRole ur : userRoles) {
-
-            Role role = ur.getRole();
-            authorities.add(
-                    new SimpleGrantedAuthority(role.getRoleName())
-            );
-
-            List<RolePrivilege> rps =
-                    rolePrivilegeRepository.findByRoleId(role.getId());
-
-            for (RolePrivilege rp : rps) {
+        for (UserRole userRole : user.getUserRoles()) {
+                Role role = userRole.getRole();
                 authorities.add(
-                        new SimpleGrantedAuthority(
-                                rp.getPrivilege().getPrivilegeName()
-                        )
+                        new SimpleGrantedAuthority(role.getRoleName())
                 );
-            }
+
+                for (RolePrivilege rp : role.getRolePrivileges()) {
+                        authorities.add(
+                                new SimpleGrantedAuthority(
+                                        rp.getPrivilege().getPrivilegeName()
+                                )
+                        );
+                }
         }
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
+                user.isEnabled(),
+                true,
+                user.isCredentialsNonExpired(),
+                user.isAccountNonLocked(),
                 authorities
         );
     }

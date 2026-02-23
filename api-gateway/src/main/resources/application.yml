@@ -14,3 +14,6 @@ spring:
       resourceserver:
         jwt: 
           secret-key: ${JWT_SECRET}
+
+# For local development, you can set a default value for JWT_SECRET here:
+JWT_SECRET: mysupersecurejwtsecretkeyforflight2026project

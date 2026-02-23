@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.flight.auth_service.dto.AuthResponse;
 import com.flight.auth_service.dto.LoginRequest;
 import com.flight.auth_service.dto.LoginResponse;
 import com.flight.auth_service.security.JwtUtil;
+import com.flight.auth_service.service.AuthService;
 import com.flight.auth_service.service.CustomUserDetailsService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,25 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final CustomUserDetailsService userDetailsService;
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
-
-        UserDetails userDetails =
-                userDetailsService.loadUserByUsername(request.getUsername());
-
-        String token = jwtUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.ok(authService.login(request));
     }
 }

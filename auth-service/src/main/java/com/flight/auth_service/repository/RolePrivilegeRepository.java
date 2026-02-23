@@ -6,10 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.flight.auth_service.entity.RolePrivilege;
+import com.flight.auth_service.entity.RolePrivilegeId;
 
 @Repository
-public interface RolePrivilegeRepository extends JpaRepository<RolePrivilege, Long> {
-    
-    List<RolePrivilege> findByRoleId(Long roleId);
-
+public interface RolePrivilegeRepository extends JpaRepository<RolePrivilege, RolePrivilegeId> {
 }

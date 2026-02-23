@@ -7,42 +7,47 @@ import org.springframework.stereotype.Service;
 import com.flight.auth_service.entity.Privilege;
 import com.flight.auth_service.entity.Role;
 import com.flight.auth_service.entity.RolePrivilege;
+import com.flight.auth_service.entity.User;
+import com.flight.auth_service.entity.UserRole;
+import com.flight.auth_service.entity.UserRoleId;
 import com.flight.auth_service.repository.PrivilegeRepository;
 import com.flight.auth_service.repository.RolePrivilegeRepository;
 import com.flight.auth_service.repository.RoleRepository;
+import com.flight.auth_service.repository.UserRepository;
+import com.flight.auth_service.repository.UserRoleRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RoleService {
 
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PrivilegeRepository privilegeRepository;
-    private final RolePrivilegeRepository rolePrivilegeRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public Role createRole(String roleName) {
+    public void assignRoleToUser(String username, String roleName) {
 
-        Role role = new Role();
-        role.setRoleName(roleName);
-        return roleRepository.save(role);
-    }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    public void assignPrivileges(Long roleId,
-                                 List<Long> privilegeIds) {
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        Role role = roleRepository.findById(roleId)
-                .orElseThrow();
+        UserRoleId id = new UserRoleId(user.getId(), role.getId());
 
-        for (Long pid : privilegeIds) {
-
-            Privilege privilege =
-                    privilegeRepository.findById(pid)
-                            .orElseThrow();
-
-            rolePrivilegeRepository.save(
-                    new RolePrivilege(null, role, privilege)
-            );
+        if (userRoleRepository.existsById(id)) {
+            return;
         }
+
+        UserRole userRole = UserRole.builder()
+                .id(id)
+                .user(user)
+                .role(role)
+                .build();
+
+        userRoleRepository.save(userRole);
     }
 }
