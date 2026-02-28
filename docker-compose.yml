@@ -37,7 +37,17 @@ services:
       - JWT_SECRET=mysupersecurejwtsecretkeyforflight2026project
     networks:
       - flight-network
-
+  flight-service:
+    build:
+      context: ./flight-service
+    container_name: flight-service
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - JWT_SECRET=mysupersecurejwtsecretkeyforflight2026project
+    networks:
+      - flight-network
   api-gateway:
     build:
       context: ./api-gateway
